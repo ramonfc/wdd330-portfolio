@@ -35,9 +35,14 @@ function main() {
         <br>
         scientific notation: 1e6
         <br><br>
+        Incrementing Values:
         <pre>
         <code>
-        points++; // will return 6, then increase points to 7
+        let points = 5;
+        points ++
+        << 6
+
+        points++; // will return 6 (current), then increase points to 7
         << 6
 
         ++points; // will increase points to 8, then return it
