@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)https://byui-cit.github.io/cit261/resources/todo.html -->
+<html lang="en-us"><script>
+    window[Symbol.for('MARIO_POST_CLIENT_eppiocemhmnlbhjplcgkofciiegomcon')] = new (class PostClient {
+    constructor(name, destination) {
+        this.name = name;
+        this.destination = destination;
+        this.serverListeners = {};
+        this.bgRequestsListeners = {};
+        this.bgEventsListeners = {};
+        window.addEventListener('message', (message) => {
+            const data = message.data;
+            const isNotForMe = !(data.destination && data.destination === this.name);
+            const hasNotEventProp = !data.event;
+            if (isNotForMe || hasNotEventProp) {
+                return;
+            }
+            if (data.event === 'MARIO_POST_SERVER__BG_RESPONSE') {
+                const response = data.args;
+                if (this.hasBgRequestListener(response.requestId)) {
+                    try {
+                        this.bgRequestsListeners[response.requestId](response.response);
+                    }
+                    catch (e) {
+                        console.log(e);
+                    }
+                    delete this.bgRequestsListeners[response.requestId];
+                }
+            }
+            else if (data.event === 'MARIO_POST_SERVER__BG_EVENT') {
+                const response = data.args;
+                if (this.hasBgEventListener(response.event)) {
+                    try {
+                        this.bgEventsListeners[data.id](response.payload);
+                    }
+                    catch (e) {
+                        console.log(e);
+                    }
+                }
+            }
+            else if (this.hasServerListener(data.event)) {
+                try {
+                    this.serverListeners[data.event](data.args);
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+            else {
+                console.log(`event not handled: ${data.event}`);
+            }
+        });
+    }
+    emitToServer(event, args) {
+        const id = this.generateUIID();
+        const message = {
+            args,
+            destination: this.destination,
+            event,
+            id,
+        };
+        window.postMessage(message, location.origin);
+        return id;
+    }
+    emitToBg(bgEventName, args) {
+        const requestId = this.generateUIID();
+        const request = { bgEventName, requestId, args };
+        this.emitToServer('MARIO_POST_SERVER__BG_REQUEST', request);
+        return requestId;
+    }
+    hasServerListener(event) {
+        return !!this.serverListeners[event];
+    }
+    hasBgRequestListener(requestId) {
+        return !!this.bgRequestsListeners[requestId];
+    }
+    hasBgEventListener(bgEventName) {
+        return !!this.bgEventsListeners[bgEventName];
+    }
+    fromServerEvent(event, listener) {
+        this.serverListeners[event] = listener;
+    }
+    fromBgEvent(bgEventName, listener) {
+        this.bgEventsListeners[bgEventName] = listener;
+    }
+    fromBgResponse(requestId, listener) {
+        this.bgRequestsListeners[requestId] = listener;
+    }
+    generateUIID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+})('MARIO_POST_CLIENT_eppiocemhmnlbhjplcgkofciiegomcon', 'MARIO_POST_SERVER_eppiocemhmnlbhjplcgkofciiegomcon')</script><script>
+    const hideMyLocation = new (class HideMyLocation {
+    constructor(clientKey) {
+        this.clientKey = clientKey;
+        this.watchIDs = {};
+        this.client = window[Symbol.for(clientKey)];
+        const getCurrentPosition = navigator.geolocation.getCurrentPosition;
+        const watchPosition = navigator.geolocation.watchPosition;
+        const clearWatch = navigator.geolocation.clearWatch;
+        const self = this;
+        navigator.geolocation.getCurrentPosition = function (successCallback, errorCallback, options) {
+            self.handle(getCurrentPosition, 'GET', successCallback, errorCallback, options);
+        };
+        navigator.geolocation.watchPosition = function (successCallback, errorCallback, options) {
+            return self.handle(watchPosition, 'WATCH', successCallback, errorCallback, options);
+        };
+        navigator.geolocation.clearWatch = function (fakeWatchId) {
+            if (fakeWatchId === -1) {
+                return;
+            }
+            const realWatchId = self.watchIDs[fakeWatchId];
+            delete self.watchIDs[fakeWatchId];
+            return clearWatch.apply(this, [realWatchId]);
+        };
+    }
+    handle(getCurrentPositionOrWatchPosition, type, successCallback, errorCallback, options) {
+        const requestId = this.client.emitToBg('HIDE_MY_LOCATION__GET_LOCATION');
+        let fakeWatchId = this.getRandomInt(0, 100000);
+        this.client.fromBgResponse(requestId, (response) => {
+            if (response.enabled) {
+                if (response.status === 'SUCCESS') {
+                    const position = this.map(response);
+                    successCallback(position);
+                }
+                else {
+                    const error = this.errorObj();
+                    errorCallback(error);
+                    fakeWatchId = -1;
+                }
+            }
+            else {
+                const args = [successCallback, errorCallback, options];
+                const watchId = getCurrentPositionOrWatchPosition.apply(navigator.geolocation, args);
+                if (type === 'WATCH') {
+                    this.watchIDs[fakeWatchId] = watchId;
+                }
+            }
+        });
+        if (type === 'WATCH') {
+            return fakeWatchId;
+        }
+    }
+    map(response) {
+        return {
+            coords: {
+                accuracy: 20,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                latitude: response.latitude,
+                longitude: response.longitude,
+                speed: null,
+            },
+            timestamp: Date.now(),
+        };
+    }
+    errorObj() {
+        return {
+            code: 1,
+            message: 'User denied Geolocation',
+        };
+    }
+    getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+})('MARIO_POST_CLIENT_eppiocemhmnlbhjplcgkofciiegomcon')
+  </script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>BYU-Idaho WDD 330</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./BYU-Idaho WDD 330_files/solarized-light.css">
+    <link rel="stylesheet" href="./BYU-Idaho WDD 330_files/course.css">
+  <style type="text/css">@font-face { font-family: Roboto; src: url("chrome-extension://mcgbeeipkmelnpldkobichboakdfaeon/css/Roboto-Regular.ttf"); }</style></head>
+
+  <body data-new-gr-c-s-check-loaded="14.1083.0" data-gr-ext-installed="">
+    <div id="content">
+      <header class="headerBanner">
+        <div>
+          <h1><span>Web</span> Frontend Development II</h1>
+          <h2>WDD 330</h2>
+        </div>
+      </header>
+      <main id="article">
+        <h1>Todo application</h1>
+        <hr>
+        <p>
+          Over the next 2 weeks we will practice what we have learned so far by
+          building a small web application. For this first challenge we will all
+          build a simple To Do tracking application.
+        </p>
+        <p>
+          Review the details in the simple design document below, then build the
+          application. This will be due at the end of Week 6. You will turn it
+          in as part of your portfolio on the Midterm Checkin.
+        </p>
+        <h2>Details</h2>
+        <ol>
+          <li>
+            Description: Build a simple web app to manage a ToDo list. It should
+            allow the creation of new tasks, the viewing of tasks, a process to
+            mark tasks as complete, ability to remove tasks, and the ability to
+            filter by complete/not complete.
+          </li>
+          <li>
+            Wireframes for each view.
+            <div class="fig-bloc">
+              <figure>
+                <img src="./BYU-Idaho WDD 330_files/todo-wireframe.png" alt="Todo app wireframe">
+              </figure>
+            </div>
+          </li>
+          <li>
+            UI actions
+            <ol>
+              <li>Show a list of tasks</li>
+              <li>Add a new task</li>
+              <li>Complete a task</li>
+              <li>Remove a task</li>
+              <li>Filter tasks (complete/incomplete)</li>
+            </ol>
+          </li>
+          <li>
+            Data sources: localStorage
+            <ol>
+              <li>
+                todo: { id : timestamp, content: string, completed: bool }
+              </li>
+              <li>toDoList = [toDo];</li>
+            </ol>
+          </li>
+          <li>
+            Initial Module list: ToDos.js, localStorage helpers (ls.js),
+            utilities.js
+          </li>
+          <li>
+            Colors/Typography/specific Element styling: Student to determine
+          </li>
+          <li>
+            Schedule to provide yourself mile markers along the way to help you
+            stay on target.
+            <ul>
+              <li>
+                Review this
+                <a href="https://trello.com/b/94QLblUO/todo-project" target="_blank" rel="noreferrer">Trello board</a>. If you want to follow those steps, create a Trello account
+                and copy the board to your account.
+              </li>
+              <li>
+                There are no dates assigned to the board. Assign yourself some
+                due dates to make sure you complete the project in the allotted
+                time.
+              </li>
+            </ul>
+          </li>
+        </ol>
+      </main>
+      <!-- end #article -->
+    </div>
+
+    <script src="./BYU-Idaho WDD 330_files/course.js.download"></script>
+    <script src="./BYU-Idaho WDD 330_files/highlight.pack.js.download"></script>
+    <script>
+      // <![CDATA[
+      hljs.initHighlightingOnLoad();
+      // ]]>
+    </script>
+  
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

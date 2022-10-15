@@ -52,6 +52,11 @@ main#home-main a {
   color: blue;
 }
 
+pre {
+  border-radius: 0.375rem;
+  background-color: #292d3e; 
+  color: white;
+}
 
 
 footer {
