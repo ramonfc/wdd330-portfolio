@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="css/medium.css">
 
 
-    <script src="js/script.js" defer></script>
+    <script src="js/main.js" type="module" defer></script>
 </head>
 <body>
     <h1>Todos</h1>
@@ -29,11 +29,19 @@
             </ul>
         </div>
 
+        <div class="todo-footer">
+            <p class="todo-count"><span id="todo-count-number"></span> tasks left</p>
+            
+            <button id="all" class="todo-button">All</button>
+            <button id="active" class="todo-button">Active</button>
+            <button id="completed" class="todo-button">Completed</button>
+        </div>
+
         <div class="input">
             <label><br>
-                <input type="text" id="favchap" required>
+                <input type="text" id="inputTask" required>
             </label>
-            <button type="submit">+</button>
+            <button type="submit" id="addBtn">&#10133</button>
         </div>
 
     </main>

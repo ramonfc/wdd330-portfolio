@@ -34,16 +34,39 @@ button {
 	font-size: 1.1rem;
 }
 
-input {
-	width: 200px;
+#inputTask {
+	width: 12em;
+	padding: 0.5em 0.8em;
 }
+
+.remove-itemBtn {
+	background-color: transparent;
+	border: none;
+}
+
+/* .todo-button {
+	background-color: transparent;
+	border: none;
+} */
+
+.todo-button--select {
+	border:1px solid rgba(0, 0, 0, 0.2);
+	padding: 1em;
+}
+
+.todo-footer {
+	display: flex;
+	justify-content: center;
+    align-items: center;
+}
+
 
 label {
 	font-size: 0.9rem;
 }
 .listcontainer {
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	margin: 1rem;
+	/* border: 1px solid rgba(0, 0, 0, 0.2);
+	margin: 1rem; */
 	padding: 1rem;
 }
 
@@ -57,9 +80,16 @@ ul {
 }
 
 li {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 0.5rem;
+	display: grid;
+    grid-template-columns: 4.1rem 1fr 0.5fr;
+    /* margin-bottom: 0.5rem; */
+    margin-left: 0rem;
+    /* gap: 1em; */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 0.5em;
 }
 
+.todo-item-strike {
+	text-decoration: line-through;
+  }
+  
