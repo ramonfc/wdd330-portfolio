@@ -639,8 +639,9 @@ function main() {
            </code>
            </pre>
             </p>
-            `,
-
+            `
+    },
+    {
         label: `
         <h3>Ajax</h3>
         <p>
