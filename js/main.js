@@ -6,6 +6,7 @@ const weekLinks = [
     { label: "Week5 notes", url: "w05/index.html" },
     { label: "Week7 notes", url: "w07/index.html" },
     { label: "Week8 notes", url: "w08/index.html" },
+    { label: "Week9 notes", url: "w09/index.html" },
   ];
 
 
@@ -17,9 +18,9 @@ listWeeklyItems(weekLinks, "weekList");
 
 function listWeeklyItems(weekElements, listIdName) {
   
-    const ol = document.querySelector(`#${listIdName}`);
+    const ul = document.querySelector(`#${listIdName}`);
 
-    if(ol){
+    if(ul){
         weekElements.forEach(element =>{
          
             const anchor = document.createElement("a");
@@ -31,7 +32,7 @@ function listWeeklyItems(weekElements, listIdName) {
             li.appendChild(anchor);
 
 
-            ol.appendChild(li);
+            ul.appendChild(li);
         });
     }
 
